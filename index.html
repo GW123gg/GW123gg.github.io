@@ -1,1 +1,687 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>영과고inside</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* (스타일은 이전과 동일) */
+    .liked { color: #ef4444; font-weight: bold; }
+    .dc-table-header { border-top: 2px solid #333; }
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3B4890; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-left: 8px; vertical-align: middle; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800">
 
+<!-- (HTML 구조는 이전과 동일) -->
+<header class="w-full bg-white text-[#3B4890] shadow-md sticky top-0 z-10">
+  <div class="max-w-5xl mx-auto p-4 flex justify-between items-center">
+    <h1 class="text-3xl font-bold cursor-pointer" onclick="showMain()">영과고inside</h1>
+    <button id="refreshButton" class="bg-[#3B4890] text-white font-semibold py-1 px-3 rounded text-sm hover:bg-[#2F3A78] transition"> 🔄 새로고침 </button>
+  </div>
+</header>
+
+<div id="app" class="max-w-5xl mx-auto p-4">
+  <div class="mb-4 bg-[#3B4890] p-2 rounded-lg shadow-md">
+    <button onclick="openGuide()" class="bg-gray-200 text-[#3B4890] px-4 py-2 rounded shadow hover:bg-gray-300 transition-colors font-semibold"> 📢 안내사항 </button>
+    <button onclick="openInquiry()" class="bg-gray-200 text-[#3B4890] px-4 py-2 rounded shadow hover:bg-gray-300 transition-colors ml-2 font-semibold"> ✉️ 문의하기 </button>
+  </div>
+  <!-- (안내사항, 문의하기 페이지 HTML은 이전과 동일) -->
+  <div id="guidePage" class="hidden bg-white p-6 rounded-lg shadow-md mb-6">
+    <button onclick="closeGuide()" class="bg-gray-200 px-3 py-1 rounded mb-4 hover:bg-gray-300 text-sm font-semibold"> ← 돌아가기 </button>
+    <h2 class="text-2xl font-bold mb-4 border-b pb-2">📢 안내사항</h2>
+    <div class="space-y-2 text-gray-700">
+      <p>1. 욕설, 비방 금지.</p>
+      <p>2. 작성글 책임은 본인에게 있습니다.</p>
+      <p class="pl-4 text-sm">IP 수집중이며 테러나 문제되는 상황이 아닌 다른 용도로 절대 사용되지 않습니다.</p>
+      <p>3. 서버 자원이 부족할 수도 있기 때문에 지연이 발생할 수도 있습니다.</p>
+      <p>4. 테러 하지 마세요 (IP주소로 보복합니다.)</p>
+      <p>5. 여러분이 게시한 글들은 AI 학습 데이터로 사용되며 익명을 보장합니다.</p>
+      <p>6. 하지만 개인정보를 게시할 경우 학습될 수도 있으니 가급적 개인정보 게시를 자제하시기 바랍니다.</p>
+      <p>7. 문의사항은 문의하기에서 작성해주세요.</p>
+      <p>8. 버그나 문제점등도 문의하기에서 작성해주시면 감사하겠습니다.</p>
+      <p>9. 추후 업데이트가 계속 진행됩니다.</p>
+      <p>10. 이 사이트에서 활동하는것은 위 사항에 동의하는것으로 간주합니다.</p>
+      <p>11. 삭제 요청은 아래 이메일로 정확한 글과 사유, 캡쳐본을 보내주셔야 진행됩니다.</p>
+      <p class="font-semibold">이메일 : 2024010203@ushs.hs.kr</p>
+    </div>
+  </div>
+  <div id="inquiryPage" class="hidden bg-white p-6 rounded-lg shadow-md mb-6">
+    <button onclick="closeInquiry()" class="bg-gray-200 px-3 py-1 rounded mb-4 hover:bg-gray-300 text-sm font-semibold"> ← 돌아가기 </button>
+    <h2 class="text-2xl font-bold mb-4 border-b pb-2">✉️ 문의하기</h2>
+    <textarea id="inquiryContent" placeholder="문의 내용을 입력하세요..." class="border p-2 mb-2 w-full rounded h-32 focus:outline-none focus:ring-2 focus:ring-[#3B4890]"></textarea>
+    <button onclick="submitInquiry()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"> 문의 전송 </button>
+    <p id="inquiryMsg" class="mt-2 text-sm"></p>
+  </div>
+  <div id="mainPage" class="grid gap-4 mb-6"></div>
+  <div id="communityPage" class="hidden">
+    <button onclick="showMain()" class="bg-gray-200 border border-gray-300 px-3 py-1 rounded mb-4 hover:bg-gray-300 text-sm font-semibold"> ← 메인으로 </button>
+    <h2 id="communityTitle" class="text-3xl font-bold mb-4 text-[#3B4890]"></h2>
+    <!-- 글쓰기 폼 -->
+    <div id="postWriteForm" class="bg-white p-4 rounded-lg shadow-md mb-4">
+      <input id="title" placeholder="제목" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
+      <input id="author" placeholder="작성자" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
+      <textarea id="content" placeholder="내용을 입력하세요" class="border w-full p-2 mb-2 rounded h-28 focus:outline-none focus:ring-2 focus:ring-[#3B4890]"></textarea>
+      <div class="mb-2">
+        <label for="imageFile" class="block text-sm font-medium text-gray-700 mb-1">이미지 첨부 (선택, 5MB 이하):</label>
+        <input type="file" id="imageFile" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#e0e7ff] file:text-[#3B4890] hover:file:bg-[#c7d2fe]">
+      </div>
+      <button id="submitBtn" onclick="submitPost()" class="bg-[#3B4890] text-white px-4 py-2 rounded hover:bg-[#2F3A78] transition-colors font-semibold disabled:opacity-50"> 글 등록 </button>
+      <span id="loadingSpinner" class="loader hidden"></span> 
+      <p id="resultMsg" class="mt-2 text-sm"></p>
+    </div>
+    <!-- 검색 -->
+    <input id="searchBox" type="text" placeholder="검색어를 입력하세요." oninput="renderPosts()" class="border w-full p-2 mb-4 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
+    <!-- 게시글 목록 -->
+    <div id="postsList" class="bg-white rounded-lg shadow-md overflow-hidden">
+      <table class="w-full text-sm dc-table-header">
+        <thead class="bg-gray-50">
+          <tr class="border-b">
+            <th class="p-3 text-left">제목</th>
+            <th class="p-3 w-24">작성자</th>
+            <th class="p-3 w-28">날짜</th>
+            <th class="p-3 w-16">조회</th>
+          </tr>
+        </thead>
+        <tbody id="postsTableBody"></tbody>
+      </table>
+    </div>
+    <!-- 게시글 상세 -->
+    <div id="postDetail" class="hidden bg-white p-6 rounded-lg shadow-md">
+      <button onclick="backToList()" class="bg-gray-200 border border-gray-300 px-3 py-1 rounded mb-4 hover:bg-gray-300 text-sm font-semibold"> ← 목록으로 </button>
+      <div class="border-b-2 border-gray-300 pb-3 mb-3">
+        <h2 id="detailTitle" class="text-2xl font-bold mb-2"></h2>
+        <div id="detailMeta" class="text-sm text-gray-600 bg-gray-50 p-2 rounded"></div>
+      </div>
+      <div id="detailImageContainer" class="mb-4"></div> 
+      <div id="detailContent" class="mb-5 whitespace-pre-wrap min-h-[100px]"></div>
+      <!-- 댓글 -->
+      <div class="border-t pt-4">
+        <h3 class="font-bold mb-3 text-lg">💬 댓글</h3>
+        <div id="commentsList" class="mb-4"></div>
+        <div class="bg-gray-50 p-3 rounded"> 
+          <input id="commentAuthor" placeholder="작성자" class="border p-2 mb-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
+          <textarea id="commentContent" placeholder="댓글 내용을 입력하세요" class="border p-2 mb-2 w-full rounded h-20 focus:outline-none focus:ring-2 focus:ring-[#3B4890]"></textarea>
+          <button onclick="submitComment()" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 font-semibold"> 댓글 등록 </button>
+        </div>
+      </div> 
+    </div>
+  </div>
+</div>
+
+<script>
+  // ❗❗ [중요] 여기에 Code.gs를 "새 배포"한 후 얻은 웹 앱 URL을 붙여넣으세요.
+  const WEB_APP_URL = "YOUR_NEW_APPS_SCRIPT_URL_HERE"; 
+
+  const communityGroups = {
+    "전체": ["전체 커뮤니티"],
+    "수학·과학": ["수학 커뮤니티", "과학 커뮤니티"],
+    "영재학교": [
+      "한국과학영재학교", "서울과학고등학교", "경기과학고등학교", "세종과학예술영재학교",
+      "인천과학예술영재학교", "대구과학고등학교", "대전과학고등학교", "광주과학고등학교"
+    ],
+    "과학고": [
+      "한성과학고등학교", "세종과학고등학교", "부산과학고등학교", "부산일과학고등학교",
+      "대구일과학고등학교", "인천과학고등학교", "인천진산과학고등학교", "대전동신과학고등학교",
+      "울산과학고등학교", "경기북과학고등학교", "강원과학고등학교", "충북과학고등학교",
+      "충남과학고등학교", "전북과학고등학교", "전남과학고등학교", "경북과학고등학교",
+      "경산과학고등학교", "경남과학고등학교", "창원과학고등학교", "제주과학고등학교"
+    ]
+  };
+  let currentCommunity = null;
+  let currentPosts = [];
+  let currentPostId = null;
+  // let webAppUrl = null; // [삭제] 상수로 대체
+
+  // DOM 참조
+  const mainPage = document.getElementById("mainPage");
+  const communityPage = document.getElementById("communityPage");
+  const guidePage = document.getElementById("guidePage");
+  const inquiryPage = document.getElementById("inquiryPage");
+  const postWriteForm = document.getElementById("postWriteForm");
+  const searchBox = document.getElementById("searchBox");
+  const postsList = document.getElementById("postsList");
+  const postDetail = document.getElementById("postDetail");
+  const postsTableBody = document.getElementById("postsTableBody");
+  const imageFileInput = document.getElementById("imageFile"); 
+  const submitButton = document.getElementById("submitBtn");
+  const loadingSpinner = document.getElementById("loadingSpinner");
+  const resultMsg = document.getElementById("resultMsg");
+  const detailImageContainer = document.getElementById("detailImageContainer");
+  const inquiryContentEl = document.getElementById("inquiryContent"); 
+  const inquiryMsgEl = document.getElementById("inquiryMsg"); 
+
+  // [삭제] getWebAppUrl 함수 (이제 상수를 사용)
+  // function getWebAppUrl() { ... }
+
+  // 메인 페이지 렌더링 (변경 없음)
+  function renderMainPage() {
+    mainPage.innerHTML = "";
+    Object.keys(communityGroups).forEach(groupName => { 
+        const container = document.createElement("div");
+        container.className = "bg-white p-4 rounded-lg shadow-md mb-4";
+        const header = document.createElement("h3");
+        header.className = "font-bold text-lg mb-3 border-b-2 border-[#3B4890] pb-2";
+        header.textContent = groupName; 
+        container.appendChild(header);
+        const btnDiv = document.createElement("div");
+        btnDiv.className = "flex flex-wrap gap-2";
+        communityGroups[groupName].forEach(c => {
+            const btn = document.createElement("button");
+            btn.className = "bg-white border border-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-50 hover:border-[#3B4890] hover:text-[#3B4890] transition-colors";
+            btn.textContent = c; 
+            btn.onclick = () => openCommunity(c); // [수정] async 제거
+            btnDiv.appendChild(btn);
+        });
+        container.appendChild(btnDiv);
+        mainPage.appendChild(container);
+    });
+  }
+
+  // 페이지 전환 함수들 (변경 없음)
+  function showMain() {
+    currentCommunity = null; currentPosts = []; currentPostId = null;
+    mainPage.classList.remove("hidden"); communityPage.classList.add("hidden");
+    guidePage.classList.add("hidden"); inquiryPage.classList.add("hidden");
+  }
+  function openGuide() {
+    mainPage.classList.add("hidden"); communityPage.classList.add("hidden");
+    guidePage.classList.remove("hidden"); inquiryPage.classList.add("hidden");
+  }
+  function closeGuide() {
+    guidePage.classList.add("hidden"); mainPage.classList.remove("hidden");
+  }
+  function openInquiry() {
+    mainPage.classList.add("hidden"); communityPage.classList.add("hidden");
+    guidePage.classList.add("hidden"); inquiryPage.classList.remove("hidden");
+  }
+  function closeInquiry() {
+    inquiryPage.classList.add("hidden"); mainPage.classList.remove("hidden");
+    inquiryContentEl.value = ""; 
+    inquiryMsgEl.textContent = ""; 
+  }
+  // [수정] openCommunity (async 및 URL 확인 로직 추가)
+  function openCommunity(communityId) { 
+    if (!WEB_APP_URL || WEB_APP_URL.includes("YOUR_NEW_APPS_SCRIPT_URL_HERE")) {
+        alert("오류: 웹 앱 URL이 설정되지 않았습니다. index.html 상단의 WEB_APP_URL 상수를 확인하세요.");
+        return;
+    }
+    currentCommunity = communityId;
+    mainPage.classList.add("hidden");
+    communityPage.classList.remove("hidden");
+    document.getElementById("communityTitle").textContent = communityId; 
+    backToList(); // 목록 UI 보이게 초기화 (내부에서 loadPosts 호출 X)
+    loadPosts();  // 여기서 loadPosts 호출
+  }
+
+  // [수정] 게시글 로드 - fetch 사용
+  function loadPosts() {
+    if (!currentCommunity) {
+        console.warn("loadPosts: currentCommunity is null");
+        return;
+    }
+    console.log("loadPosts called for community:", currentCommunity);
+    postsTableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">게시글을 불러오는 중...</td></tr>';
+    
+    // google.script.run 대신 fetch (GET) 사용
+    fetch(`${WEB_APP_URL}?action=getPosts&community=${encodeURIComponent(currentCommunity)}`)
+      .then(response => {
+          if (!response.ok) {
+              // 오류 응답을 JSON으로 파싱 시도
+              return response.json().then(errData => {
+                  throw new Error(errData.message || `Network response was not ok: ${response.statusText}`);
+              }).catch(() => {
+                  // JSON 파싱 실패 시
+                  throw new Error(`Network response was not ok: ${response.statusText}`);
+              });
+          }
+          return response.json();
+      })
+      .then(data => {
+        console.log("getPosts success. Data received:", data); 
+        // [수정] API가 {success: false, ...} 객체를 반환하는지 확인
+        if (data && data.success === false) {
+             console.error("getPosts API Error:", data.message);
+             postsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">데이터 로드 오류: ${data.message}</td></tr>`;
+             currentPosts = [];
+             return;
+        }
+        if (!Array.isArray(data)) {
+            console.error("getPosts did not return an array:", data);
+            postsTableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">데이터 형식 오류.</td></tr>';
+            currentPosts = []; 
+            return;
+        }
+        currentPosts = data;
+        renderPosts();
+      })
+      .catch(err => {
+         console.error("getPosts fetch failed:", err);
+         postsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">게시글 로드 실패: ${err.message}</td></tr>`;
+      });
+  }
+
+  // [수정] 게시글 렌더링 - createElement 사용
+  function renderPosts() {
+    const search = searchBox.value.toLowerCase();
+    postsTableBody.innerHTML = ""; 
+    
+    if (!Array.isArray(currentPosts)) {
+        postsTableBody.innerHTML = "<tr><td colspan='4' class='p-4 text-center text-red-500'>데이터 오류 발생.</td></tr>";
+        return;
+    }
+
+    const filtered = currentPosts.filter(
+      (p) => {
+          const titleMatch = p && typeof p.title === 'string' && p.title.toLowerCase().includes(search);
+          const authorMatch = p && typeof p.authorNickname === 'string' && p.authorNickname.toLowerCase().includes(search);
+          return titleMatch || authorMatch;
+       }
+    );
+
+    if (filtered.length === 0) {
+      postsTableBody.innerHTML = "<tr><td colspan='4' class='p-4 text-center text-gray-500'>게시글이 없습니다.</td></tr>";
+      return;
+    }
+
+    filtered.forEach((p, index) => { 
+      if (!p || typeof p !== 'object' || !p.postId) {
+          console.warn(`Skipping invalid post data or missing postId at index ${index}:`, p);
+          return; 
+      }
+
+      const tr = document.createElement("tr");
+      tr.className = "border-b cursor-pointer hover:bg-gray-50 transition-colors";
+      
+      let dateOnly = '';
+      if (p.timestamp) {
+          try { dateOnly = p.timestamp.split(' ')[0].replace(/\.$/, ''); } 
+          catch (e) { console.warn(`Error parsing timestamp for post ${p.postId}:`, p.timestamp, e); }
+      }
+
+      try {
+        const tdTitle = document.createElement("td");
+        tdTitle.className = "p-3"; 
+        tdTitle.textContent = p.title || ""; 
+        tr.appendChild(tdTitle); 
+
+        const tdAuthor = document.createElement("td");
+        tdAuthor.className = "p-3 w-24 text-center"; 
+        tdAuthor.textContent = p.authorNickname || ""; 
+        tr.appendChild(tdAuthor); 
+
+        const tdDate = document.createElement("td");
+        tdDate.className = "p-3 w-28 text-center text-gray-600"; 
+        tdDate.textContent = dateOnly; 
+        tr.appendChild(tdDate); 
+
+        const tdViews = document.createElement("td");
+        tdViews.className = "p-3 w-16 text-center text-gray-600"; 
+        tdViews.textContent = p.views !== undefined && p.views !== null ? p.views : 0; 
+        tr.appendChild(tdViews); 
+
+        tr.onclick = () => showDetail(p.postId);
+        postsTableBody.appendChild(tr); 
+      } catch (e) {
+          console.error(`Error rendering row for post at index ${index}:`, p, e);
+      }
+    });
+  }
+
+  // [수정] submitPost 함수 - fetch (POST) 사용
+  function submitPost() {
+    const title = document.getElementById("title").value;
+    const author = document.getElementById("author").value;
+    const content = document.getElementById("content").value;
+    const file = imageFileInput.files[0]; 
+
+    if (!title || !author || !content) {
+      resultMsg.textContent = "❌ 제목, 작성자, 내용을 모두 입력하세요.";
+      return;
+    }
+    if (!WEB_APP_URL || WEB_APP_URL.includes("YOUR_")) {
+        resultMsg.textContent = "❌ 오류: API URL이 설정되지 않았습니다.";
+        return;
+    }
+
+    submitButton.disabled = true;
+    loadingSpinner.classList.remove("hidden");
+    resultMsg.textContent = "등록 중..."; 
+
+    const postData = {
+      communityId: currentCommunity,
+      title: title, authorNickname: author, content: content,
+      imageData: null, imageName: null, imageType: null
+    };
+
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { 
+          resultMsg.textContent = "❌ 이미지 파일 크기는 5MB를 초과할 수 없습니다.";
+          submitButton.disabled = false;
+          loadingSpinner.classList.add("hidden");
+          imageFileInput.value = ""; 
+          return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64String = e.target.result.split(',')[1]; 
+        if (!base64String) { 
+            resultMsg.textContent = "❌ 이미지 처리 중 오류 발생.";
+            submitButton.disabled = false;
+            loadingSpinner.classList.add("hidden");
+            return;
+        }
+        postData.imageData = base64String;
+        postData.imageName = file.name;
+        postData.imageType = file.type;
+        callAddPostApi(postData); 
+      };
+      reader.onerror = function(e) {
+         console.error("파일 읽기 오류:", e);
+         resultMsg.textContent = "❌ 파일을 읽는 중 오류가 발생했습니다.";
+         submitButton.disabled = false;
+         loadingSpinner.classList.add("hidden");
+      };
+      try { reader.readAsDataURL(file); } 
+      catch (readErr) {
+          console.error("FileReader readAsDataURL error:", readErr);
+          resultMsg.textContent = "❌ 파일 읽기 시작 중 오류 발생.";
+          submitButton.disabled = false;
+          loadingSpinner.classList.add("hidden");
+      }
+    } else {
+      callAddPostApi(postData);
+    }
+  }
+
+  // [수정] callAddPostApi - fetch (POST) 사용
+  function callAddPostApi(dataToSend) {
+      console.log("Calling fetch POST addPost with data:", { ...dataToSend, imageData: dataToSend.imageData ? '[Base64 Data]' : null }); 
+      
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        mode: "cors", // CORS 모드 명시
+        cache: "no-cache",
+        headers: {
+          // [수정] Code.gs의 doPost가 JSON.parse(e.postData.contents)를 사용하므로 text/plain 사용
+          "Content-Type": "text/plain;charset=utf-8", 
+        },
+        body: JSON.stringify({ // 데이터를 JSON 문자열로 변환하여 전송
+          action: "addPost",
+          data: dataToSend 
+        })
+      })
+      .then(response => {
+          if (!response.ok) {
+             return response.json().then(err => { throw new Error(err.message || `Server Error: ${response.statusText}`); });
+          }
+          return response.json(); 
+      }) 
+      .then(res => {
+          console.log("addPost API success:", res); 
+          resultMsg.textContent = res.message || "응답 메시지 없음"; 
+          if (res && res.success === true) { 
+            document.getElementById("title").value = "";
+            document.getElementById("author").value = "";
+            document.getElementById("content").value = "";
+            imageFileInput.value = ""; 
+            setTimeout(() => { resultMsg.textContent = ""; }, 1500); 
+            loadPosts(); 
+          } else {
+             console.error("Server returned success:false:", res ? res.message : "No message");
+          }
+          submitButton.disabled = false;
+          loadingSpinner.classList.add("hidden");
+        })
+        .catch(err => {
+           console.error("addPost API fetch failure:", err); 
+           resultMsg.textContent = `❌ 서버 통신 오류: ${err.message}`; 
+           submitButton.disabled = false;
+           loadingSpinner.classList.add("hidden");
+        });
+  }
+
+  // [수정] showDetail 함수 - fetch (GET) 사용
+  function showDetail(postId) { 
+    if (!postId) { console.error("showDetail: Invalid postId."); return; }
+    console.log("Showing detail for postId:", postId);
+
+    if (!WEB_APP_URL || WEB_APP_URL.includes("YOUR_")) { /* ... (URL 없음 오류) ... */ return; }
+    if (!Array.isArray(currentPosts)) { /* ... (배열 아님 오류) ... */ return; }
+    
+    const post = currentPosts.find(p => p && p.postId && p.postId.toString() === postId.toString()); 
+    if (!post) { /* ... (게시글 없음 오류) ... */ return; }
+    
+    currentPostId = postId; 
+    postWriteForm.classList.add("hidden"); searchBox.classList.add("hidden"); postsList.classList.add("hidden");
+    postDetail.classList.remove("hidden");
+    document.getElementById("detailTitle").textContent = post.title || "제목 없음";
+    document.getElementById("detailMeta").textContent = `작성자: ${post.authorNickname || "익명"} | 날짜: ${post.timestamp || "알 수 없음"} | 조회수: ${post.views || 0}`;
+    
+    detailImageContainer.innerHTML = ""; 
+    
+    // [수정] Code.gs가 imageId를 반환하므로 post.imageId로 확인
+    if (post.imageId && typeof post.imageId === 'string' && post.imageId.trim() !== "") { 
+        const imageUrl = `${WEB_APP_URL}?action=getImage&id=${post.imageId}`; 
+        console.log("Fetching image via proxy URL:", imageUrl); 
+        
+        detailImageContainer.innerHTML = '<p class="text-gray-500 text-sm">이미지 로딩 중...</p>'; 
+        
+        fetch(imageUrl) 
+          .then(response => {
+              if (!response.ok) {
+                  return response.text().then(text => { 
+                      throw new Error(`이미지 서버 응답 오류 ${response.status}: ${text || response.statusText}`);
+                  });
+              }
+              return response.text(); 
+          })
+          .then(base64Content => {
+               if (base64Content && typeof base64Content === 'string' && !base64Content.startsWith("Error") && base64Content.length > 100) { 
+                  let mimeType = "image/unknown"; 
+                  const signature = base64Content.substring(0, 20); 
+                  if (signature.startsWith("/9j/")) mimeType = "image/jpeg";
+                  else if (signature.startsWith("iVBORw")) mimeType = "image/png";
+                  else if (signature.startsWith("R0lGOD")) mimeType = "image/gif";
+                  else if (signature.startsWith("UklGR")) mimeType = "image/webp"; 
+                  else if (signature.startsWith("PHN2Zy")) mimeType = "image/svg+xml";
+                  
+                  const img = document.createElement("img");
+                  img.src = `data:${mimeType};base64,${base64Content}`; 
+                  img.alt = (post.title || "게시글") + " 이미지"; 
+                  img.className = "max-w-full h-auto rounded shadow my-4"; 
+                  img.onerror = () => { 
+                      console.error("이미지 표시 실패 (Data URL):", post.imageId);
+                      detailImageContainer.innerHTML = '<p class="text-red-500 text-sm">이미지 표시 중 오류 발생.</p>'; 
+                  };
+                  detailImageContainer.innerHTML = ""; 
+                  detailImageContainer.appendChild(img); 
+               } else {
+                   const errorMessage = base64Content && base64Content.startsWith("Error") ? base64Content : "유효하지 않은 이미지 데이터 수신.";
+                   throw new Error(errorMessage);
+               }
+          })
+          .catch(err => {
+              console.error("이미지 프록시 fetch/처리 실패:", err);
+              detailImageContainer.innerHTML = `<p class="text-red-500 text-sm">이미지 로드 실패: ${err.message}</p>`;
+          });
+
+    } else {
+        // console.log("No valid imageId found for this post.");
+        detailImageContainer.innerHTML = ""; 
+    }
+    
+    document.getElementById("detailContent").textContent = post.content || ""; 
+
+    // [수정] 조회수 증가 - fetch POST 사용
+    if (currentPostId) {
+        console.log("Calling incrementViews for postId:", currentPostId);
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            mode: "cors",
+            cache: "no-cache",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              action: "incrementViews",
+              data: { postId: currentPostId } 
+            })
+        })
+        .then(response => response.json())
+        .then(res => {
+            if (!res.success) console.error("incrementViews failed:", res);
+        })
+        .catch(err => console.error(`조회수 증가 fetch 실패 (postId: ${currentPostId}):`, err)); 
+        
+        loadComments(); // 댓글 로드
+    } else {
+        console.error("Cannot call incrementViews/loadComments: currentPostId is invalid.");
+    }
+  }
+
+  // [수정] backToList - loadPosts() 호출 추가
+  function backToList() {
+    console.log("Back to list clicked.");
+    postDetail.classList.add("hidden");
+    currentPostId = null; 
+    detailImageContainer.innerHTML = ""; 
+    document.getElementById("commentsList").innerHTML = ""; 
+    postWriteForm.classList.remove("hidden");
+    searchBox.classList.remove("hidden");
+    postsList.classList.remove("hidden");
+    searchBox.value = "";
+    if (currentCommunity) {
+      loadPosts(); // [수정] 목록으로 돌아갈 때 목록 새로고침
+    }
+  }
+  
+  // [수정] submitComment - fetch (POST) 사용
+  function submitComment() {
+    if (!currentPostId) { /* ... */ return; }
+    const commentData = {
+      postId: currentPostId,
+      authorNickname: document.getElementById("commentAuthor").value,
+      content: document.getElementById("commentContent").value
+    };
+    if (!commentData.authorNickname || !commentData.content) { /* ... */ return; }
+    
+    console.log("Submitting comment via fetch:", commentData);
+    fetch(WEB_APP_URL, {
+        method: "POST",
+        mode: "cors",
+        cache: "no-cache",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "addComment", data: commentData })
+    })
+      .then(response => response.json())
+      .then(res => {
+        if (res && res.success === true) {
+            console.log("submitComment success.");
+            loadComments();
+            document.getElementById("commentAuthor").value = "";
+            document.getElementById("commentContent").value = "";
+        } else {
+            console.error("댓글 등록 서버 처리 실패:", res ? res.message : "알 수 없는 오류");
+            alert("댓글 등록 중 오류가 발생했습니다.");
+        }
+      })
+      .catch(err => {
+         console.error("댓글 등록 fetch 실패:", err);
+         alert("댓글 등록 중 네트워크 오류가 발생했습니다.");
+      });
+  }
+  
+  // [수정] loadComments - fetch (GET) 사용
+  function loadComments() {
+    if (!currentPostId) { /* ... */ return; }
+    console.log("Loading comments via fetch for postId:", currentPostId); 
+    
+    fetch(`${WEB_APP_URL}?action=getComments&postId=${currentPostId}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log("getComments success. Data:", data); 
+        const container = document.getElementById("commentsList");
+        container.innerHTML = "";
+        if (!data || !Array.isArray(data) || data.length === 0) { 
+          container.innerHTML = "<p class='text-gray-500 text-sm'>등록된 댓글이 없습니다.</p>";
+          return;
+        }
+        data.forEach((c) => {
+          if (!c || typeof c !== 'object') { /* ... */ return; }
+          const div = document.createElement("div");
+          div.className = "border-b border-gray-200 py-3";
+          const author = c.authorNickname || "익명";
+          const time = c.timestamp || "";
+          const commentContent = c.content || "";
+          div.innerHTML = `
+            <p class="font-semibold">${author} <span class="text-xs text-gray-500 font-normal">(${time})</span></p>
+            <p class="text-gray-700 whitespace-pre-wrap">${commentContent}</p>`;
+          container.appendChild(div);
+        });
+      })
+      .catch(err => {
+         console.error(`댓글 로드 fetch 실패 (postId: ${currentPostId}):`, err);
+         document.getElementById("commentsList").innerHTML = "<p class='text-red-500 text-sm'>댓글을 불러오는 중 오류 발생.</p>";
+      });
+  }
+  
+  // [수정] submitInquiry - fetch (POST) 사용
+  function submitInquiry() {
+    const content = inquiryContentEl.value;
+    if (!content || content.trim() === "") {
+      inquiryMsgEl.textContent = "❌ 문의 내용을 입력하세요.";
+      return;
+    }
+    
+    const submitInquiryButton = inquiryPage.querySelector('button[onclick="submitInquiry()"]');
+    if (submitInquiryButton) submitInquiryButton.disabled = true;
+    inquiryMsgEl.textContent = "전송 중...";
+
+    console.log("Submitting inquiry via fetch:", content);
+    fetch(WEB_APP_URL, {
+        method: "POST",
+        mode: "cors",
+        cache: "no-cache",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        // [수정] Code.gs의 addInquiry 함수가 inquiry.content를 기대하므로
+        body: JSON.stringify({ action: "addInquiry", data: { content: content } }) 
+    })
+      .then(response => response.json())
+      .then(res => {
+        console.log("submitInquiry success:", res);
+        // [수정] Code.gs의 addInquiry 응답이 {success: true}만 반환하므로 메시지 수정
+        inquiryMsgEl.textContent = res.success ? "✅ 문의 등록 성공!" : (res.message || "오류 발생");
+        if (res && res.success === true) {
+          inquiryContentEl.value = "";
+          setTimeout(() => { 
+            if (inquiryMsgEl.textContent === "✅ 문의 등록 성공!") {
+                 inquiryMsgEl.textContent = ""; 
+            }
+          }, 2000);
+        }
+        if (submitInquiryButton) submitInquiryButton.disabled = false;
+      })
+      .catch(err => {
+         console.error("문의 등록 fetch 실패:", err);
+         inquiryMsgEl.textContent = "❌ 문의 등록 중 오류 발생.";
+         if (submitInquiryButton) submitInquiryButton.disabled = false;
+      });
+  }
+
+  // 초기 렌더링 및 이벤트 리스너
+  renderMainPage();
+  // [삭제] 페이지 로드 시 getWebAppUrl() 호출 (openCommunity에서 처리)
+  
+  document.getElementById('refreshButton').addEventListener('click', () => {
+    if (currentCommunity) {
+      console.log("Refresh button clicked for community:", currentCommunity);
+      loadPosts(); 
+    } else {
+      console.log("Refresh button clicked on main page.");
+      renderMainPage(); 
+    }
+  });
+
+</script>
+</body>
+</html>
