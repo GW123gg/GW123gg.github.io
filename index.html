@@ -6,7 +6,6 @@
   <title>영과고inside</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .liked { color: #ef4444; font-weight: bold; }
     .dc-table-header { border-top: 2px solid #333; }
     .loader { 
       border: 4px solid #f3f3f3; 
@@ -47,30 +46,6 @@
       max-height: 90vh;
       overflow-y: auto;
     }
-    .message-bubble {
-      max-width: 70%;
-      padding: 0.75rem;
-      border-radius: 1rem;
-      margin-bottom: 0.5rem;
-      word-wrap: break-word;
-    }
-    .message-mine {
-      background-color: #3B4890;
-      color: white;
-      margin-left: auto;
-    }
-    .message-theirs {
-      background-color: #e5e7eb;
-      color: #1f2937;
-    }
-    .reply-indicator {
-      font-size: 0.75rem;
-      opacity: 0.7;
-      margin-bottom: 0.25rem;
-      padding: 0.25rem 0.5rem;
-      background-color: rgba(255,255,255,0.2);
-      border-radius: 0.25rem;
-    }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800">
@@ -82,18 +57,6 @@
     <div class="flex gap-2">
       <button id="refreshButton" class="bg-[#3B4890] text-white font-semibold py-1 px-3 rounded text-sm hover:bg-[#2F3A78] transition">
         🔄 새로고침
-      </button>
-      <button id="chatButton" class="bg-green-500 text-white font-semibold py-1 px-3 rounded text-sm hover:bg-green-600 transition hidden">
-        💬 채팅
-      </button>
-      <button id="myPageButton" class="bg-purple-500 text-white font-semibold py-1 px-3 rounded text-sm hover:bg-purple-600 transition hidden">
-        👤 내 정보
-      </button>
-      <button id="loginButton" class="bg-blue-500 text-white font-semibold py-1 px-3 rounded text-sm hover:bg-blue-600 transition">
-        🔑 로그인
-      </button>
-      <button id="logoutButton" class="bg-red-500 text-white font-semibold py-1 px-3 rounded text-sm hover:bg-red-600 transition hidden">
-        🚪 로그아웃
       </button>
     </div>
   </div>
@@ -158,11 +121,12 @@
     
     <!-- 글쓰기 폼 -->
     <div id="postWriteForm" class="bg-white p-4 rounded-lg shadow-md mb-4">
+      <input id="authorNickname" placeholder="닉네임" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
       <input id="title" placeholder="제목" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
       <textarea id="content" placeholder="내용을 입력하세요" class="border w-full p-2 mb-2 rounded h-28 focus:outline-none focus:ring-2 focus:ring-[#3B4890]"></textarea>
       <input id="postPassword" type="password" placeholder="게시글 비밀번호 (수정/삭제 시 필요)" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
       <div class="mb-2">
-        <label for="imageFile" class="block text-sm font-medium text-gray-700 mb-1">이미지 첨부 (선택, 5MB 이하):</label>
+        <label for="imageFile" class="block text-sm font-medium text-gray-700 mb-1">이미지 첨부 (선택, 2MB 이하):</label>
         <input type="file" id="imageFile" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#e0e7ff] file:text-[#3B4890] hover:file:bg-[#c7d2fe]">
       </div>
       <button id="submitBtn" onclick="submitPost()" class="bg-[#3B4890] text-white px-4 py-2 rounded hover:bg-[#2F3A78] transition-colors font-semibold disabled:opacity-50">
@@ -232,97 +196,12 @@
         <h3 class="font-bold mb-3 text-lg">💬 댓글</h3>
         <div id="commentsList" class="mb-4"></div>
         <div class="bg-gray-50 p-3 rounded">
-          <input id="commentAuthor" placeholder="작성자" class="border p-2 mb-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
+          <input id="commentAuthor" placeholder="닉네임" class="border p-2 mb-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
           <textarea id="commentContent" placeholder="댓글 내용을 입력하세요" class="border p-2 mb-2 w-full rounded h-20 focus:outline-none focus:ring-2 focus:ring-[#3B4890]"></textarea>
           <button onclick="submitComment()" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 font-semibold">댓글 등록</button>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- 채팅 페이지 -->
-  <div id="chatPage" class="hidden">
-    <button onclick="closeChatPage()" class="bg-gray-200 border border-gray-300 px-3 py-1 rounded mb-4 hover:bg-gray-300 text-sm font-semibold">
-      ← 뒤로가기
-    </button>
-    <h2 class="text-3xl font-bold mb-4 text-[#3B4890]">💬 채팅</h2>
-
-    <!-- 친구 관리 탭 -->
-    <div class="bg-white p-4 rounded-lg shadow-md mb-4">
-      <div class="flex gap-2 mb-4 border-b">
-        <button onclick="showFriendTab('list')" id="friendListTab" class="px-4 py-2 font-semibold border-b-2 border-[#3B4890] text-[#3B4890]">친구 목록</button>
-        <button onclick="showFriendTab('search')" id="friendSearchTab" class="px-4 py-2 font-semibold text-gray-500">친구 추가</button>
-        <button onclick="showFriendTab('requests')" id="friendRequestsTab" class="px-4 py-2 font-semibold text-gray-500">받은 요청</button>
-      </div>
-
-      <!-- 친구 목록 -->
-      <div id="friendListView">
-        <div id="friendList" class="space-y-2"></div>
-      </div>
-
-      <!-- 친구 검색 -->
-      <div id="friendSearchView" class="hidden">
-        <input id="friendSearchInput" type="text" placeholder="사용자 ID 또는 닉네임 검색" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-        <button onclick="searchFriend()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">검색</button>
-        <div id="searchResults" class="mt-4 space-y-2"></div>
-      </div>
-
-      <!-- 받은 친구 요청 -->
-      <div id="friendRequestsView" class="hidden">
-        <div id="pendingRequests" class="space-y-2"></div>
-      </div>
-    </div>
-
-    <!-- 채팅창 -->
-    <div id="chatWindow" class="hidden bg-white p-4 rounded-lg shadow-md">
-      <div class="flex justify-between items-center mb-4 border-b pb-2">
-        <h3 id="chatWindowTitle" class="text-xl font-bold"></h3>
-        <button onclick="closeChatWindow()" class="text-gray-500 hover:text-gray-700">✕</button>
-      </div>
-      <div id="chatMessages" class="h-96 overflow-y-auto mb-4 space-y-2"></div>
-      <div class="flex gap-2">
-        <input type="file" id="chatImageInput" accept="image/*" class="hidden" onchange="handleChatImage()" />
-        <button onclick="document.getElementById('chatImageInput').click()" class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300">📎</button>
-        <input id="chatMessageInput" type="text" placeholder="메시지를 입력하세요..." class="border flex-1 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" onkeypress="if(event.key==='Enter') sendChatMessage()" />
-        <button onclick="sendChatMessage()" class="bg-[#3B4890] text-white px-4 py-2 rounded hover:bg-[#2F3A78]">전송</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 내 정보 페이지 -->
-  <div id="myPage" class="hidden bg-white p-6 rounded-lg shadow-md">
-    <button onclick="closeMyPage()" class="bg-gray-200 px-3 py-1 rounded mb-4 hover:bg-gray-300 text-sm font-semibold">
-      ← 돌아가기
-    </button>
-    <h2 class="text-2xl font-bold mb-4 border-b pb-2">👤 내 정보</h2>
-    <div class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">아이디</label>
-        <input id="myUserId" type="text" disabled class="border w-full p-2 rounded bg-gray-100" />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">닉네임</label>
-        <input id="myNickname" type="text" class="border w-full p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">이메일</label>
-        <input id="myEmail" type="email" class="border w-full p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-      </div>
-      <div class="flex items-center gap-2">
-        <input id="twoFactorToggle" type="checkbox" class="w-5 h-5" onchange="handleTwoFactorToggle()" />
-        <label for="twoFactorToggle" class="text-sm font-medium text-gray-700">2차 인증 활성화 (이메일 인증)</label>
-      </div>
-      <button onclick="updateProfile()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">프로필 업데이트</button>
-      <p id="myPageMsg" class="text-sm"></p>
-    </div>
-  </div>
-</div>
-
-<!-- 로그인/회원가입 모달 -->
-<div id="authModal" class="modal">
-  <div class="modal-content">
-    <h2 id="authModalTitle" class="text-2xl font-bold mb-4">🔑 로그인</h2>
-    <div id="authModalContent"></div>
   </div>
 </div>
 
@@ -336,22 +215,6 @@
     <div class="flex gap-2">
       <button onclick="submitPasswordModal()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex-1">확인</button>
       <button onclick="closePasswordModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 flex-1">취소</button>
-    </div>
-  </div>
-</div>
-
-<!-- 2차 인증 모달 -->
-<div id="twoFactorModal" class="modal">
-  <div class="modal-content">
-    <h2 class="text-2xl font-bold mb-4">📧 2차 인증</h2>
-    <p class="mb-4 text-gray-600">이메일로 전송된 6자리 인증 코드를 입력하세요.</p>
-    <p class="mb-2 text-sm text-gray-500">이메일: <span id="twoFactorEmail"></span></p>
-    <input id="twoFactorCodeInput" type="text" placeholder="인증 코드 (6자리)" maxlength="6" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-    <p id="twoFactorError" class="text-red-500 text-sm mb-2"></p>
-    <div class="flex gap-2">
-      <button onclick="submitTwoFactorCode()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex-1">확인</button>
-      <button onclick="resendVerificationCode()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">재전송</button>
-      <button onclick="closeTwoFactorModal()" class="bg-red-300 text-red-700 px-4 py-2 rounded hover:bg-red-400">취소</button>
     </div>
   </div>
 </div>
@@ -381,10 +244,7 @@
   let currentCommunity = null;
   let currentPosts = [];
   let currentPostId = null;
-  let currentUser = null;
   let currentPasswordModalAction = null;
-  let currentChatRoomId = null;
-  let chatPollingInterval = null;
   let currentPage = 1;
   let totalPages = 1;
   let postsPerPage = 10;
@@ -394,8 +254,6 @@
   const communityPage = document.getElementById("communityPage");
   const guidePage = document.getElementById("guidePage");
   const inquiryPage = document.getElementById("inquiryPage");
-  const chatPage = document.getElementById("chatPage");
-  const myPage = document.getElementById("myPage");
   const postWriteForm = document.getElementById("postWriteForm");
   const searchBox = document.getElementById("searchBox");
   const postsList = document.getElementById("postsList");
@@ -412,7 +270,6 @@
   // ===== 초기화 =====
   function init() {
     renderMainPage();
-    updateAuthUI();
     
     document.getElementById('refreshButton').addEventListener('click', () => {
       if (currentCommunity) {
@@ -421,38 +278,6 @@
         renderMainPage();
       }
     });
-
-    document.getElementById('loginButton').addEventListener('click', showLoginModal);
-    document.getElementById('logoutButton').addEventListener('click', logout);
-    document.getElementById('chatButton').addEventListener('click', openChatPage);
-    document.getElementById('myPageButton').addEventListener('click', openMyPage);
-
-    // 로컬 스토리지에서 사용자 정보 복원
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      currentUser = JSON.parse(savedUser);
-      updateAuthUI();
-    }
-  }
-
-  // ===== 인증 UI 업데이트 =====
-  function updateAuthUI() {
-    const loginBtn = document.getElementById('loginButton');
-    const logoutBtn = document.getElementById('logoutButton');
-    const chatBtn = document.getElementById('chatButton');
-    const myPageBtn = document.getElementById('myPageButton');
-
-    if (currentUser) {
-      loginBtn.classList.add('hidden');
-      logoutBtn.classList.remove('hidden');
-      chatBtn.classList.remove('hidden');
-      myPageBtn.classList.remove('hidden');
-    } else {
-      loginBtn.classList.remove('hidden');
-      logoutBtn.classList.add('hidden');
-      chatBtn.classList.add('hidden');
-      myPageBtn.classList.add('hidden');
-    }
   }
 
   // ===== 페이지 전환 함수들 =====
@@ -464,8 +289,6 @@
     communityPage.classList.add("hidden");
     guidePage.classList.add("hidden");
     inquiryPage.classList.add("hidden");
-    chatPage.classList.add("hidden");
-    myPage.classList.add("hidden");
   }
 
   function openGuide() {
@@ -473,8 +296,6 @@
     communityPage.classList.add("hidden");
     guidePage.classList.remove("hidden");
     inquiryPage.classList.add("hidden");
-    chatPage.classList.add("hidden");
-    myPage.classList.add("hidden");
   }
 
   function closeGuide() {
@@ -487,8 +308,6 @@
     communityPage.classList.add("hidden");
     guidePage.classList.add("hidden");
     inquiryPage.classList.remove("hidden");
-    chatPage.classList.add("hidden");
-    myPage.classList.add("hidden");
   }
 
   function closeInquiry() {
@@ -498,59 +317,17 @@
     inquiryMsgEl.textContent = "";
   }
 
-  function openChatPage() {
-    if (!currentUser) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-    mainPage.classList.add("hidden");
-    communityPage.classList.add("hidden");
-    guidePage.classList.add("hidden");
-    inquiryPage.classList.add("hidden");
-    chatPage.classList.remove("hidden");
-    myPage.classList.add("hidden");
-    loadFriendList();
-    loadPendingRequests();
-  }
-
-  function closeChatPage() {
-    chatPage.classList.add("hidden");
-    mainPage.classList.remove("hidden");
-    closeChatWindow();
-  }
-
-  function openMyPage() {
-    if (!currentUser) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-    mainPage.classList.add("hidden");
-    communityPage.classList.add("hidden");
-    guidePage.classList.add("hidden");
-    inquiryPage.classList.add("hidden");
-    chatPage.classList.add("hidden");
-    myPage.classList.remove("hidden");
-    loadUserProfile();
-  }
-
-  function closeMyPage() {
-    myPage.classList.add("hidden");
-    mainPage.classList.remove("hidden");
-  }
-
   function openCommunity(communityId) {
     if (!WEB_APP_URL || WEB_APP_URL.includes("YOUR_NEW_APPS_SCRIPT_URL_HERE")) {
       alert("오류: 웹 앱 URL이 설정되지 않았습니다.");
       return;
     }
     currentCommunity = communityId;
-    currentPage = 1; // 페이지 초기화
+    currentPage = 1;
     mainPage.classList.add("hidden");
     communityPage.classList.remove("hidden");
     guidePage.classList.add("hidden");
     inquiryPage.classList.add("hidden");
-    chatPage.classList.add("hidden");
-    myPage.classList.add("hidden");
     document.getElementById("communityTitle").textContent = communityId;
     backToList();
     loadPosts(1);
@@ -580,409 +357,6 @@
     });
   }
 
-  // ===== 인증 시스템 =====
-  function showLoginModal() {
-    const modal = document.getElementById('authModal');
-    const title = document.getElementById('authModalTitle');
-    const content = document.getElementById('authModalContent');
-    
-    title.textContent = "🔑 로그인";
-    content.innerHTML = `
-      <input id="loginUserId" type="text" placeholder="아이디" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-      <input id="loginPassword" type="password" placeholder="비밀번호" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-      <p id="loginError" class="text-red-500 text-sm mb-2"></p>
-      <div class="flex gap-2 mb-4">
-        <button onclick="submitLogin()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex-1">로그인</button>
-        <button onclick="closeAuthModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 flex-1">취소</button>
-      </div>
-      <div class="text-center">
-        <button onclick="showSignUpForm()" class="text-blue-500 hover:underline text-sm">회원가입</button>
-      </div>
-    `;
-    modal.classList.add('active');
-  }
-
-  function showSignUpForm() {
-    const title = document.getElementById('authModalTitle');
-    const content = document.getElementById('authModalContent');
-    
-    title.textContent = "📝 회원가입";
-    content.innerHTML = `
-      <input id="signupUserId" type="text" placeholder="아이디" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-      <input id="signupPassword" type="password" placeholder="비밀번호" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-      <input id="signupPasswordConfirm" type="password" placeholder="비밀번호 확인" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-      <input id="signupNickname" type="text" placeholder="닉네임" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-      <input id="signupEmail" type="email" placeholder="이메일" class="border w-full p-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#3B4890]" />
-      <p id="signupError" class="text-red-500 text-sm mb-2"></p>
-      <div class="flex gap-2 mb-4">
-        <button onclick="submitSignUp()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex-1">가입하기</button>
-        <button onclick="closeAuthModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 flex-1">취소</button>
-      </div>
-      <div class="text-center">
-        <button onclick="showLoginModal()" class="text-blue-500 hover:underline text-sm">로그인으로 돌아가기</button>
-      </div>
-    `;
-  }
-
-  function closeAuthModal() {
-    document.getElementById('authModal').classList.remove('active');
-  }
-
-  async function submitLogin() {
-    const userId = document.getElementById('loginUserId').value;
-    const password = document.getElementById('loginPassword').value;
-    const errorEl = document.getElementById('loginError');
-
-    if (!userId || !password) {
-      errorEl.textContent = "아이디와 비밀번호를 입력하세요.";
-      return;
-    }
-
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "login", data: { userId, password } })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        // 2차 인증 확인
-        if (result.user.twoFactorEnabled) {
-          // 2차 인증 코드 발송
-          const verifyResponse = await fetch(WEB_APP_URL, {
-            method: "POST",
-            mode: "cors",
-            cache: "no-cache",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ 
-              action: "sendVerificationEmail", 
-              data: { email: result.user.email, purpose: 'login' } 
-            })
-          });
-
-          const verifyResult = await verifyResponse.json();
-
-          if (verifyResult.success) {
-            closeAuthModal();
-            showTwoFactorModal(result.user);
-          } else {
-            errorEl.textContent = verifyResult.message || "인증 코드 발송 실패";
-          }
-        } else {
-          // 2차 인증 비활성화 - 바로 로그인
-          currentUser = result.user;
-          localStorage.setItem('currentUser', JSON.stringify(currentUser));
-          updateAuthUI();
-          closeAuthModal();
-          alert("로그인 성공!");
-        }
-      } else {
-        errorEl.textContent = result.message || "로그인 실패";
-      }
-    } catch (err) {
-      console.error("로그인 오류:", err);
-      errorEl.textContent = "로그인 중 오류가 발생했습니다.";
-    }
-  }
-
-  async function submitSignUp() {
-    const userId = document.getElementById('signupUserId').value;
-    const password = document.getElementById('signupPassword').value;
-    const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
-    const nickname = document.getElementById('signupNickname').value;
-    const email = document.getElementById('signupEmail').value;
-    const errorEl = document.getElementById('signupError');
-
-    if (!userId || !password || !nickname || !email) {
-      errorEl.textContent = "모든 필드를 입력하세요.";
-      return;
-    }
-
-    if (password !== passwordConfirm) {
-      errorEl.textContent = "비밀번호가 일치하지 않습니다.";
-      return;
-    }
-
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ 
-          action: "signUp", 
-          data: { userId, password, nickname, email } 
-        })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        alert("회원가입이 완료되었습니다! 로그인해주세요.");
-        showLoginModal();
-      } else {
-        errorEl.textContent = result.message || "회원가입 실패";
-      }
-    } catch (err) {
-      console.error("회원가입 오류:", err);
-      errorEl.textContent = "회원가입 중 오류가 발생했습니다.";
-    }
-  }
-
-  function logout() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    updateAuthUI();
-    showMain();
-    alert("로그아웃되었습니다.");
-  }
-
-  // ===== 2차 인증 시스템 =====
-  let pendingTwoFactorUser = null;
-
-  function showTwoFactorModal(user) {
-    pendingTwoFactorUser = user;
-    const modal = document.getElementById('twoFactorModal');
-    document.getElementById('twoFactorEmail').textContent = user.email;
-    document.getElementById('twoFactorCodeInput').value = "";
-    document.getElementById('twoFactorError').textContent = "";
-    modal.classList.add('active');
-  }
-
-  function closeTwoFactorModal() {
-    document.getElementById('twoFactorModal').classList.remove('active');
-    pendingTwoFactorUser = null;
-  }
-
-  async function submitTwoFactorCode() {
-    const code = document.getElementById('twoFactorCodeInput').value;
-    const errorEl = document.getElementById('twoFactorError');
-
-    if (!code || code.length !== 6) {
-      errorEl.textContent = "6자리 인증 코드를 입력하세요.";
-      return;
-    }
-
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ 
-          action: "verifyCode", 
-          data: { email: pendingTwoFactorUser.email, code, purpose: 'login' } 
-        })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        currentUser = pendingTwoFactorUser;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        updateAuthUI();
-        closeTwoFactorModal();
-        alert("로그인 성공!");
-      } else {
-        errorEl.textContent = result.message || "인증 실패";
-      }
-    } catch (err) {
-      console.error("2차 인증 오류:", err);
-      errorEl.textContent = "인증 중 오류가 발생했습니다.";
-    }
-  }
-
-  async function resendVerificationCode() {
-    if (!pendingTwoFactorUser) return;
-
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ 
-          action: "sendVerificationEmail", 
-          data: { email: pendingTwoFactorUser.email, purpose: 'login' } 
-        })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        alert("인증 코드가 재전송되었습니다.");
-      } else {
-        alert(result.message || "재전송 실패");
-      }
-    } catch (err) {
-      console.error("재전송 오류:", err);
-      alert("재전송 중 오류가 발생했습니다.");
-    }
-  }
-
-  // ===== 내 정보 페이지 =====
-  async function loadUserProfile() {
-    if (!currentUser) return;
-
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ 
-          action: "getUserProfile", 
-          data: { userId: currentUser.userId } 
-        })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        document.getElementById('myUserId').value = result.user.userId;
-        document.getElementById('myNickname').value = result.user.nickname;
-        document.getElementById('myEmail').value = result.user.email;
-        document.getElementById('twoFactorToggle').checked = result.user.twoFactorEnabled;
-        currentUser = result.user;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-      }
-    } catch (err) {
-      console.error("프로필 로드 오류:", err);
-    }
-  }
-
-  async function updateProfile() {
-    const nickname = document.getElementById('myNickname').value;
-    const email = document.getElementById('myEmail').value;
-    const msgEl = document.getElementById('myPageMsg');
-
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ 
-          action: "updateUserProfile", 
-          data: { userId: currentUser.userId, nickname, email } 
-        })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        msgEl.textContent = "✅ " + result.message;
-        msgEl.className = "text-sm text-green-500";
-        currentUser = result.user;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        setTimeout(() => { msgEl.textContent = ""; }, 3000);
-      } else {
-        msgEl.textContent = "❌ " + result.message;
-        msgEl.className = "text-sm text-red-500";
-      }
-    } catch (err) {
-      console.error("프로필 업데이트 오류:", err);
-      msgEl.textContent = "❌ 프로필 업데이트 중 오류 발생";
-      msgEl.className = "text-sm text-red-500";
-    }
-  }
-
-  async function handleTwoFactorToggle() {
-    const enable = document.getElementById('twoFactorToggle').checked;
-    const msgEl = document.getElementById('myPageMsg');
-
-    if (enable) {
-      // 2차 인증 활성화 - 이메일 인증 필요
-      try {
-        const response = await fetch(WEB_APP_URL, {
-          method: "POST",
-          mode: "cors",
-          cache: "no-cache",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ 
-            action: "sendVerificationEmail", 
-            data: { email: currentUser.email, purpose: 'enable2fa' } 
-          })
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          const code = prompt("이메일로 전송된 6자리 인증 코드를 입력하세요:");
-          if (code) {
-            const verifyResponse = await fetch(WEB_APP_URL, {
-              method: "POST",
-              mode: "cors",
-              cache: "no-cache",
-              headers: { "Content-Type": "text/plain;charset=utf-8" },
-              body: JSON.stringify({ 
-                action: "verifyCode", 
-                data: { email: currentUser.email, code, purpose: 'enable2fa' } 
-              })
-            });
-
-            const verifyResult = await verifyResponse.json();
-
-            if (verifyResult.success) {
-              await toggleTwoFactorAPI(true);
-            } else {
-              alert(verifyResult.message || "인증 실패");
-              document.getElementById('twoFactorToggle').checked = false;
-            }
-          } else {
-            document.getElementById('twoFactorToggle').checked = false;
-          }
-        } else {
-          alert(result.message || "인증 코드 발송 실패");
-          document.getElementById('twoFactorToggle').checked = false;
-        }
-      } catch (err) {
-        console.error("2차 인증 활성화 오류:", err);
-        document.getElementById('twoFactorToggle').checked = false;
-      }
-    } else {
-      // 2차 인증 비활성화
-      if (confirm("2차 인증을 비활성화하시겠습니까?")) {
-        await toggleTwoFactorAPI(false);
-      } else {
-        document.getElementById('twoFactorToggle').checked = true;
-      }
-    }
-  }
-
-  async function toggleTwoFactorAPI(enable) {
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ 
-          action: "toggleTwoFactor", 
-          data: { userId: currentUser.userId, enable } 
-        })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        currentUser.twoFactorEnabled = enable;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        alert(result.message);
-      } else {
-        alert(result.message || "설정 변경 실패");
-        document.getElementById('twoFactorToggle').checked = !enable;
-      }
-    } catch (err) {
-      console.error("2차 인증 설정 오류:", err);
-      document.getElementById('twoFactorToggle').checked = !enable;
-    }
-  }
-
   // ===== 게시글 관리 =====
   async function loadPosts(page = 1) {
     if (!currentCommunity) return;
@@ -1000,26 +374,19 @@
         return;
       }
 
-      // 문서 요구사항: totalPosts 활용
       if (data.success && Array.isArray(data.posts)) {
         currentPosts = data.posts;
-        
-        // 총 페이지 수 계산 (문서 요구사항)
         totalPages = Math.ceil(data.totalPosts / postsPerPage);
         if (totalPages === 0) totalPages = 1;
-        
         renderPosts();
         renderPagination();
       } else if (Array.isArray(data)) {
-        // 구버전 호환 (totalPosts 없을 경우)
         currentPosts = data;
-        
         if (data.length < postsPerPage) {
           totalPages = currentPage;
         } else {
           totalPages = currentPage + 1;
         }
-        
         renderPosts();
         renderPagination();
       } else {
@@ -1039,16 +406,13 @@
     const nextBtn = document.getElementById('nextPageBtn');
     const lastBtn = document.getElementById('lastPageBtn');
 
-    // 페이지 정보 표시 (문서 요구사항: totalPages 활용)
     pageInfo.textContent = `${currentPage} / ${totalPages} 페이지`;
 
-    // 버튼 활성화/비활성화
     firstBtn.disabled = currentPage === 1;
     prevBtn.disabled = currentPage === 1;
     nextBtn.disabled = currentPage >= totalPages;
     lastBtn.disabled = currentPage >= totalPages;
 
-    // 비활성화된 버튼 스타일
     [firstBtn, prevBtn, nextBtn, lastBtn].forEach(btn => {
       if (btn.disabled) {
         btn.classList.add('cursor-not-allowed', 'opacity-50');
@@ -1060,10 +424,7 @@
 
   function goToPage(page) {
     if (page < 1 || page > totalPages) return;
-    
     loadPosts(page);
-    
-    // 페이지 이동 시 스크롤 최상단으로
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1078,7 +439,7 @@
 
     const filtered = currentPosts.filter(p => {
       const titleMatch = p && typeof p.title === 'string' && p.title.toLowerCase().includes(search);
-      const authorMatch = p && typeof p.authorId === 'string' && p.authorId.toLowerCase().includes(search);
+      const authorMatch = p && typeof p.authorNickname === 'string' && p.authorNickname.toLowerCase().includes(search);
       return titleMatch || authorMatch;
     });
 
@@ -1113,7 +474,7 @@
 
         const tdAuthor = document.createElement("td");
         tdAuthor.className = "p-3 w-24 text-center";
-        tdAuthor.textContent = p.authorId || "";
+        tdAuthor.textContent = p.authorNickname || "익명";
         tr.appendChild(tdAuthor);
 
         const tdDate = document.createElement("td");
@@ -1135,18 +496,14 @@
   }
 
   async function submitPost() {
+    const authorNickname = document.getElementById("authorNickname").value;
     const title = document.getElementById("title").value;
     const content = document.getElementById("content").value;
     const postPassword = document.getElementById("postPassword").value;
     const file = imageFileInput.files[0];
 
-    if (!currentUser) {
-      resultMsg.textContent = "❌ 로그인이 필요합니다.";
-      return;
-    }
-
-    if (!title || !content) {
-      resultMsg.textContent = "❌ 제목과 내용을 모두 입력하세요.";
+    if (!authorNickname || !title || !content) {
+      resultMsg.textContent = "❌ 닉네임, 제목, 내용을 모두 입력하세요.";
       return;
     }
 
@@ -1162,7 +519,7 @@
     const postData = {
       communityId: currentCommunity,
       title: title,
-      authorId: currentUser.userId,
+      authorNickname: authorNickname,
       content: content,
       postPassword: postPassword,
       imageData: null,
@@ -1171,8 +528,8 @@
     };
 
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        resultMsg.textContent = "❌ 이미지 파일 크기는 5MB를 초과할 수 없습니다.";
+      if (file.size > 2 * 1024 * 1024) {
+        resultMsg.textContent = "❌ 이미지 파일 크기는 2MB를 초과할 수 없습니다.";
         submitButton.disabled = false;
         loadingSpinner.classList.add("hidden");
         imageFileInput.value = "";
@@ -1227,12 +584,13 @@
       resultMsg.textContent = res.message || "응답 메시지 없음";
 
       if (res && res.success === true) {
+        document.getElementById("authorNickname").value = "";
         document.getElementById("title").value = "";
         document.getElementById("content").value = "";
         document.getElementById("postPassword").value = "";
         imageFileInput.value = "";
         setTimeout(() => { resultMsg.textContent = ""; }, 1500);
-        currentPage = 1; // 새 글 작성 후 첫 페이지로
+        currentPage = 1;
         loadPosts(1);
       } else {
         console.error("Server returned success:false:", res ? res.message : "No message");
@@ -1268,9 +626,8 @@
     postDetail.classList.remove("hidden");
 
     document.getElementById("detailTitle").textContent = post.title || "제목 없음";
-    document.getElementById("detailMeta").textContent = `작성자: ${post.authorId || "익명"} | 날짜: ${post.timestamp || "알 수 없음"} | 조회수: ${post.views || 0}`;
+    document.getElementById("detailMeta").textContent = `작성자: ${post.authorNickname || "익명"} | 날짜: ${post.timestamp || "알 수 없음"} | 조회수: ${post.views || 0}`;
 
-    // 수정/삭제 버튼
     const actionsEl = document.getElementById("detailActions");
     actionsEl.innerHTML = "";
     
@@ -1332,7 +689,6 @@
     document.getElementById("detailEditForm").classList.add("hidden");
     document.getElementById("detailContentDisplay").classList.remove("hidden");
 
-    // 조회수 증가
     if (currentPostId) {
       try {
         await fetch(WEB_APP_URL, {
@@ -1361,9 +717,10 @@
     postWriteForm.classList.remove("hidden");
     searchBox.classList.remove("hidden");
     postsList.classList.remove("hidden");
+    document.getElementById("pagination").classList.remove("hidden");
     searchBox.value = "";
     if (currentCommunity) {
-      loadPosts();
+      loadPosts(currentPage);
     }
   }
 
@@ -1480,9 +837,9 @@
       if (result.success) {
         alert(result.message);
         closePasswordModal();
-        currentPage = 1; // 삭제 후 첫 페이지로
-        showMain(); // 메인으로 돌아가거나
-        openCommunity(currentCommunity); // 같은 커뮤니티 첫 페이지
+        currentPage = 1;
+        showMain();
+        openCommunity(currentCommunity);
       } else {
         document.getElementById('modalPasswordError').textContent = result.message || "삭제 실패";
       }
@@ -1496,16 +853,15 @@
   async function submitComment() {
     if (!currentPostId) return;
 
-    // 문제 해결: authorId 전송 (authorNickname이 아님!)
     const commentData = {
       postId: currentPostId,
       communityId: currentCommunity,
-      authorId: currentUser ? currentUser.userId : document.getElementById("commentAuthor").value, // authorId!
+      authorNickname: document.getElementById("commentAuthor").value || "익명",
       content: document.getElementById("commentContent").value
     };
 
-    if (!commentData.authorId || !commentData.content) {
-      alert("작성자와 내용을 입력하세요.");
+    if (!commentData.content) {
+      alert("댓글 내용을 입력하세요.");
       return;
     }
 
@@ -1601,349 +957,6 @@
       console.error("문의 등록 실패:", err);
       inquiryMsgEl.textContent = "❌ 문의 등록 중 오류 발생.";
     }
-  }
-
-  // ===== 친구 관리 =====
-  function showFriendTab(tab) {
-    document.getElementById('friendListTab').className = "px-4 py-2 font-semibold text-gray-500";
-    document.getElementById('friendSearchTab').className = "px-4 py-2 font-semibold text-gray-500";
-    document.getElementById('friendRequestsTab').className = "px-4 py-2 font-semibold text-gray-500";
-    document.getElementById('friendListView').classList.add('hidden');
-    document.getElementById('friendSearchView').classList.add('hidden');
-    document.getElementById('friendRequestsView').classList.add('hidden');
-
-    if (tab === 'list') {
-      document.getElementById('friendListTab').className = "px-4 py-2 font-semibold border-b-2 border-[#3B4890] text-[#3B4890]";
-      document.getElementById('friendListView').classList.remove('hidden');
-      loadFriendList();
-    } else if (tab === 'search') {
-      document.getElementById('friendSearchTab').className = "px-4 py-2 font-semibold border-b-2 border-[#3B4890] text-[#3B4890]";
-      document.getElementById('friendSearchView').classList.remove('hidden');
-    } else if (tab === 'requests') {
-      document.getElementById('friendRequestsTab').className = "px-4 py-2 font-semibold border-b-2 border-[#3B4890] text-[#3B4890]";
-      document.getElementById('friendRequestsView').classList.remove('hidden');
-      loadPendingRequests();
-    }
-  }
-
-  async function loadFriendList() {
-    if (!currentUser) return;
-
-    try {
-      const response = await fetch(`${WEB_APP_URL}?action=getFriendList&userId=${currentUser.userId}`);
-      const result = await response.json();
-
-      const container = document.getElementById('friendList');
-      container.innerHTML = "";
-
-      if (result.success && result.friends && result.friends.length > 0) {
-        result.friends.forEach(friend => {
-          const div = document.createElement('div');
-          div.className = "flex justify-between items-center p-3 bg-gray-50 rounded hover:bg-gray-100 cursor-pointer";
-          div.innerHTML = `
-            <div>
-              <p class="font-semibold">${friend.nickname}</p>
-              <p class="text-sm text-gray-500">${friend.userId}</p>
-            </div>
-            <button onclick="openChatWithFriend('${friend.chatRoomId}', '${friend.nickname}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">채팅</button>
-          `;
-          container.appendChild(div);
-        });
-      } else {
-        container.innerHTML = "<p class='text-gray-500 text-sm'>친구가 없습니다.</p>";
-      }
-    } catch (err) {
-      console.error("친구 목록 로드 실패:", err);
-    }
-  }
-
-  async function searchFriend() {
-    const query = document.getElementById('friendSearchInput').value;
-    if (!query) {
-      alert("검색어를 입력하세요.");
-      return;
-    }
-
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "searchUser", data: { query } })
-      });
-
-      const result = await response.json();
-
-      const container = document.getElementById('searchResults');
-      container.innerHTML = "";
-
-      if (result.success && result.users && result.users.length > 0) {
-        result.users.forEach(user => {
-          if (user.userId === currentUser.userId) return; // 자기 자신 제외
-
-          const div = document.createElement('div');
-          div.className = "flex justify-between items-center p-3 bg-gray-50 rounded";
-          div.innerHTML = `
-            <div>
-              <p class="font-semibold">${user.nickname}</p>
-              <p class="text-sm text-gray-500">${user.userId}</p>
-            </div>
-            <button onclick="sendFriendRequest('${user.userId}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">친구 요청</button>
-          `;
-          container.appendChild(div);
-        });
-      } else {
-        container.innerHTML = "<p class='text-gray-500 text-sm'>검색 결과가 없습니다.</p>";
-      }
-    } catch (err) {
-      console.error("사용자 검색 실패:", err);
-    }
-  }
-
-  async function sendFriendRequest(targetId) {
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "sendFriendRequest",
-          data: { userA_Id: currentUser.userId, userB_Id: targetId }
-        })
-      });
-
-      const result = await response.json();
-      alert(result.message);
-    } catch (err) {
-      console.error("친구 요청 실패:", err);
-      alert("친구 요청 중 오류가 발생했습니다.");
-    }
-  }
-
-  async function loadPendingRequests() {
-    if (!currentUser) return;
-
-    try {
-      const response = await fetch(`${WEB_APP_URL}?action=getPendingRequests&userId=${currentUser.userId}`);
-      const result = await response.json();
-
-      const container = document.getElementById('pendingRequests');
-      container.innerHTML = "";
-
-      if (result.success && result.requests && result.requests.length > 0) {
-        result.requests.forEach(request => {
-          const div = document.createElement('div');
-          div.className = "flex justify-between items-center p-3 bg-gray-50 rounded";
-          div.innerHTML = `
-            <div>
-              <p class="font-semibold">${request.nickname}</p>
-              <p class="text-sm text-gray-500">${request.userId}</p>
-            </div>
-            <div class="flex gap-2">
-              <button onclick="acceptFriendRequest('${request.userId}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">수락</button>
-              <button onclick="declineFriendRequest('${request.userId}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">거절</button>
-            </div>
-          `;
-          container.appendChild(div);
-        });
-      } else {
-        container.innerHTML = "<p class='text-gray-500 text-sm'>받은 친구 요청이 없습니다.</p>";
-      }
-    } catch (err) {
-      console.error("친구 요청 목록 로드 실패:", err);
-    }
-  }
-
-  async function acceptFriendRequest(requesterId) {
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "acceptFriendRequest",
-          data: { requesterId: requesterId, accepterId: currentUser.userId }
-        })
-      });
-
-      const result = await response.json();
-      alert(result.message);
-      loadPendingRequests();
-      loadFriendList();
-    } catch (err) {
-      console.error("친구 요청 수락 실패:", err);
-      alert("친구 요청 수락 중 오류가 발생했습니다.");
-    }
-  }
-
-  async function declineFriendRequest(requesterId) {
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "declineFriendRequest",
-          data: { requesterId: requesterId, declinerId: currentUser.userId }
-        })
-      });
-
-      const result = await response.json();
-      alert(result.message);
-      loadPendingRequests();
-    } catch (err) {
-      console.error("친구 요청 거절 실패:", err);
-      alert("친구 요청 거절 중 오류가 발생했습니다.");
-    }
-  }
-
-  // ===== 채팅 시스템 =====
-  function openChatWithFriend(chatRoomId, friendNickname) {
-    currentChatRoomId = chatRoomId;
-    document.getElementById('chatWindowTitle').textContent = friendNickname;
-    document.getElementById('chatWindow').classList.remove('hidden');
-    loadChatMessages();
-
-    // 3초마다 메시지 폴링
-    if (chatPollingInterval) clearInterval(chatPollingInterval);
-    chatPollingInterval = setInterval(loadChatMessages, 3000);
-  }
-
-  function closeChatWindow() {
-    document.getElementById('chatWindow').classList.add('hidden');
-    currentChatRoomId = null;
-    if (chatPollingInterval) {
-      clearInterval(chatPollingInterval);
-      chatPollingInterval = null;
-    }
-  }
-
-  async function loadChatMessages() {
-    if (!currentChatRoomId) return;
-
-    try {
-      const response = await fetch(`${WEB_APP_URL}?action=getMessages&chatRoomId=${currentChatRoomId}`);
-      const messages = await response.json();
-
-      const container = document.getElementById('chatMessages');
-      container.innerHTML = "";
-
-      if (Array.isArray(messages) && messages.length > 0) {
-        messages.forEach(msg => {
-          const isMine = msg.senderId === currentUser.userId;
-          const div = document.createElement('div');
-          div.className = `message-bubble ${isMine ? 'message-mine' : 'message-theirs'}`;
-          
-          let content = "";
-          if (msg.messageType === 'image') {
-            content = `<img src="${WEB_APP_URL}?action=getImage&id=${msg.content}" class="max-w-full rounded" alt="채팅 이미지" />`;
-          } else {
-            content = msg.content;
-          }
-
-          div.innerHTML = `
-            ${msg.replyToMessageId ? `<div class="reply-indicator">↩ 답장</div>` : ''}
-            <div>${content}</div>
-            <div class="text-xs opacity-70 mt-1">${msg.timestamp}</div>
-          `;
-          container.appendChild(div);
-        });
-
-        container.scrollTop = container.scrollHeight;
-      }
-    } catch (err) {
-      console.error("메시지 로드 실패:", err);
-    }
-  }
-
-  async function sendChatMessage() {
-    const input = document.getElementById('chatMessageInput');
-    const content = input.value.trim();
-
-    if (!content) return;
-
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "sendMessage",
-          data: {
-            chatRoomId: currentChatRoomId,
-            senderId: currentUser.userId,
-            messageType: 'text',
-            content: content
-          }
-        })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        input.value = "";
-        loadChatMessages();
-      }
-    } catch (err) {
-      console.error("메시지 전송 실패:", err);
-    }
-  }
-
-  async function handleChatImage() {
-    const fileInput = document.getElementById('chatImageInput');
-    const file = fileInput.files[0];
-
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("이미지 크기는 5MB를 초과할 수 없습니다.");
-      fileInput.value = "";
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-      const base64String = e.target.result.split(',')[1];
-
-      try {
-        const response = await fetch(WEB_APP_URL, {
-          method: "POST",
-          mode: "cors",
-          cache: "no-cache",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            action: "sendMessage",
-            data: {
-              chatRoomId: currentChatRoomId,
-              senderId: currentUser.userId,
-              messageType: 'image',
-              imageData: base64String,
-              imageName: file.name,
-              imageType: file.type
-            }
-          })
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          fileInput.value = "";
-          loadChatMessages();
-        } else {
-          alert("이미지 전송 실패: " + result.message);
-        }
-      } catch (err) {
-        console.error("이미지 전송 실패:", err);
-        alert("이미지 전송 중 오류가 발생했습니다.");
-      }
-    };
-
-    reader.readAsDataURL(file);
   }
 
   // ===== 초기화 실행 =====
